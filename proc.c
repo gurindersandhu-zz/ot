@@ -253,24 +253,16 @@ kthread_fork(char* stack, void* pointer)
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
-/*  for(i = 0; i < NOFILE; i++)
-    if(curproc->ofile[i])
-      np->ofile[i] = filedup(curproc->ofile[i]);
-  np->cwd = idup(curproc->cwd);
-*/
   for(i = 0; i < NOFILE; i++)
     if(curproc->ofile[i])
       np->ofile[i] = curproc->ofile[i];
   np->cwd = curproc->cwd;
 
   safestrcpy(np->name, curproc->name, sizeof(curproc->name));
-
   pid = np->pid;
 
   acquire(&ptable.lock);
-
   np->state = RUNNABLE;
-
   release(&ptable.lock);
 
   return pid;
@@ -351,34 +343,11 @@ kthread_exit(void)
   if(curproc == initproc)
     panic("init exiting");
 
-/*
-  // Close all open files.
-  for(fd = 0; fd < NOFILE; fd++){
-    if(curproc->ofile[fd]){
-      fileclose(curproc->ofile[fd]);
-      curproc->ofile[fd] = 0;
-    }
-  }
-
-  begin_op();
-  iput(curproc->cwd);
-  end_op();
-  curproc->cwd = 0;
-*/
   acquire(&ptable.lock);
 
   // Parent might be sleeping in wait().
   wakeup1(curproc->parent);
 
-  // Pass abandoned children to init.
-/*  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->parent == curproc){
-      p->parent = initproc;
-      if(p->state == ZOMBIE)
-        wakeup1(initproc);
-    }
-  }
-*/
   // Jump into the scheduler, never to return.
   curproc->state = ZOMBIE;
   sched();
