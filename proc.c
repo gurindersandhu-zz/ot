@@ -253,24 +253,16 @@ kthread_fork(char* stack, void* pointer)
   // Clear %eax so that fork returns 0 in the child.
   np->tf->eax = 0;
 
-/*  for(i = 0; i < NOFILE; i++)
-    if(curproc->ofile[i])
-      np->ofile[i] = filedup(curproc->ofile[i]);
-  np->cwd = idup(curproc->cwd);
-*/
   for(i = 0; i < NOFILE; i++)
     if(curproc->ofile[i])
       np->ofile[i] = curproc->ofile[i];
   np->cwd = curproc->cwd;
 
   safestrcpy(np->name, curproc->name, sizeof(curproc->name));
-
   pid = np->pid;
 
   acquire(&ptable.lock);
-
   np->state = RUNNABLE;
-
   release(&ptable.lock);
 
   return pid;
